@@ -59,6 +59,7 @@ import javax.management.ReflectionException;
 import java.io.IOException;
 import java.rmi.UnmarshalException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -266,6 +267,10 @@ public class Query {
 		return new Builder();
 	}
 
+	public static Builder builder(Query query) {
+		return new Builder(query);
+	}
+
 	public void runOutputWritersForQuery(Server server, Iterable<Result> results) throws Exception {
 		for (OutputWriter writer : getOutputWriterInstances()) {
 			writer.doWrite(server, this, results);
@@ -288,6 +293,18 @@ public class Query {
 
 		private Builder() {}
 
+		/** This builder does NOT copy output writers from the given query. */
+		private Builder(Query query) {
+			this.obj = query.objectName.toString();
+			this.attr.addAll(query.attr);
+			this.resultAlias = query.resultAlias;
+			this.keys.addAll(query.keys);
+			this.useObjDomainAsKey = query.useObjDomainAsKey;
+			this.allowDottedKeys = query.allowDottedKeys;
+			this.useAllTypeNames = query.useAllTypeNames;
+			this.typeNames.addAll(query.typeNames);
+		}
+
 		public Builder addAttr(String... attr) {
 			this.attr.addAll(asList(attr));
 			return this;
@@ -308,6 +325,11 @@ public class Query {
 
 		public Builder addOutputWriters(OutputWriterFactory... outputWriters) {
 			this.outputWriters.addAll(asList(outputWriters));
+			return this;
+		}
+
+		public Builder addOutputWriters(Collection<OutputWriterFactory> outputWriters) {
+			this.outputWriters.addAll(outputWriters);
 			return this;
 		}
 
